@@ -1,1 +1,1 @@
-export const DB_NAME = "_akhand"
+export const DB_NAME = "ak_tube"

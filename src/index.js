@@ -1,48 +1,43 @@
-// require('dotenv').config({path:'./env'})
+// As early as possible in your application, import and configure dotenv:
+// require('dotenv').config({path:".env"})
 
 import dotenv from "dotenv";
+import connentDB from "./db/index.js";
 
-// import mongoose from "mongoose";
-// import { DB_NAME } from "./constants";
-import connectDB from "./db/index.js";
-
+//-r dotenv/config --experimental-json-modules add this in package.jason file to config env 
 dotenv.config({
-  path: "./env",
-});
+  path:".env"
+})
 
-connectDB()
-  .then(() => {
-    app.on("error", (error) => {
-      console.log("Errrrr", error);
-      throw error;
-    });
-    app.listen(process.env.PORT || 8000, () => {
-      console.log(`server is running at port ${process.env.PORT}`);
-    });
-  })
-  .catch((err) => {
-    console.log("mongoDB connection feild : ", err);
-  });
+connentDB()
 
-/*
 
-import express from "express"
 
-const app = express();
-( async ()=>{
-    try {
-       await mongoose.connect(`${process.env.MONGODB_URI}/${DB_NAME}`)
-       app.on("error",(error)=>{
-        console.log("Errrrr",error);
-        throw error;
-       })
-       app.listen(process.env.PORT ,()=>{
-        console.log(`App is listning on port ${process.env.PORT}`)
-       })
-    } catch (error) {
-        console.error("Error:",error)
-        throw error
-    }
-})()
 
-*/
+
+
+
+
+
+
+
+
+
+// import express from "express"
+// const app = express();
+
+// (async() => {
+//   try {
+//     await mongoose.connect(`${process.env.MONGODB_URI}/${DB_NAME}`)
+//     app.on("error",(error)=>{
+//       console.log("Errr : ",error)
+//       throw error
+//     })
+//     app.listen(process.env.PORT, () => {
+//       console.log(`app listen on : ${process.env.PORT}`)
+//     });
+//   } catch (error) {
+//     console.log("ERROR: ",error)
+//     throw error;
+//   }
+// })()
