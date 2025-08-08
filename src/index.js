@@ -3,6 +3,7 @@
 
 import dotenv from "dotenv";
 import connentDB from "./db/index.js";
+import { app } from "./app.js";
 
 //-r dotenv/config --experimental-json-modules add this in package.jason file to config env 
 dotenv.config({
@@ -10,6 +11,20 @@ dotenv.config({
 })
 
 connentDB()
+.then(()=>{
+
+  app.on("error",(error) => {
+    console.log(`ERROR : ${error}`);
+    throw error
+  })
+
+  app.listen(process.env.PORT || 8000, () => {
+    console.log(`app listen on ${process.env.PORT}`);
+  })
+})
+.catch((err) => {
+  console.log(`MongoDB connection FAILED !!! : ${err}`);
+})
 
 
 
