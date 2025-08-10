@@ -51,7 +51,7 @@ const userSchema = new Schema(
 
 
 // a pre hook is middleware that runs before a certain action (e.g., save, update).
-// Often used for password hashing, data validation, logging.
+// bcrypt Often used for password hashing, data validation, logging.
 userSchema.pre("save",async function (next) {
     if(!this.isModified("password"))  return next();
 
@@ -66,28 +66,46 @@ userSchema.methods.isPasswordCorrect = async function(password){
 }
 
 userSchema.methods.generateAccessToken = function(){
-    return jwt.sign({
-        _id : this._id,
-        email : this.email,
-        username : this.username,
-        fullname : this.fullname
+    return jwt.sign({ // ① Create a signed JWT token
+        _id : this._id,       // ② Include user ID
+        email : this.email,   // ③ Include email
+        username : this.username, // ④ Include username
+        fullname : this.fullname  // ⑤ Include fullname
     },
-    process.env.ACCESS_TOKEN_SECRET,
+    process.env.ACCESS_TOKEN_SECRET, // ⑥ Use secret key for signing
     {
-        expiresIn : process.env.ACCESS_TOKEN_EXPIRY
+        expiresIn : process.env.ACCESS_TOKEN_EXPIRY // ⑦ Token validity period
     }
 )
 }
 
 userSchema.methods.generateRefreshToken = function(){
-      return jwt.sign({
-        _id : this._id
+    return jwt.sign({
+        _id : this._id // ① Only user ID (less sensitive)
     },
-    process.env.REFRESH_TOKEN_SECRET,
+    process.env.REFRESH_TOKEN_SECRET, // ② Different secret for extra security
     {
-        expiresIn : process.env.REFRESH_TOKEN_EXPIRY
+        expiresIn : process.env.REFRESH_TOKEN_EXPIRY // ③ Longer expiry (days/weeks)
     }
 )
 }
 
+
 export const User = mongoose.model("User",userSchema)
+
+
+/*
+Analogy
+Imagine you have:
+Access Token = A visitor badge for entering different rooms in a company.
+
+Expires quickly.
+
+Contains your name, ID, and permissions.
+
+Refresh Token = A VIP re-entry card kept safely in your bag.
+
+Used to get a new visitor badge without visiting the front desk again.
+
+Lasts much longer.
+*/
