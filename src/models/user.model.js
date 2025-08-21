@@ -52,12 +52,17 @@ const userSchema = new Schema(
 
 // a pre hook is middleware that runs before a certain action (e.g., save, update).
 // bcrypt Often used for password hashing, data validation, logging.
-userSchema.pre("save",async function (next) {
-    if(!this.isModified("password"))  return next();
 
-    this.password = bcrypt.hash(this.password,10)
-    next()
-})
+userSchema.pre("save", async function (next) {
+    // If password is not modified, skip hashing
+    if (!this.isModified("password")) return next();
+    
+    // If password is new/changed, hash it
+    this.password = await bcrypt.hash(this.password, 10);
+    
+    // Move to the next middleware / save
+    next();
+});
 
 // userSchema me hum khud ka functon define kar shakte hai 
 // ye method hum passsword ok check kar rahe ki ye correct hai ya nahi
