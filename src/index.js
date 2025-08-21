@@ -7,7 +7,7 @@ import { app } from "./app.js";
 
 //-r dotenv/config --experimental-json-modules add this in package.jason file to config env 
 dotenv.config({
-  path:".env"
+  path:"./.env"
 })
 
 connentDB()

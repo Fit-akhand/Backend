@@ -17,8 +17,9 @@ const uplodeonCloudinary = async (localfilepath) => {
             resource_type : "auto"
         })
         //file has been uploded successfully
-        console.log("file is uplodede on cloudinary",response.url); 
+        // console.log("file is uplodede on cloudinary",response.url); 
         //  response URL in your website or app to display the image/video without storing it locally.
+        fs.unlinkSync(localfilepath)
         return response; 
 
     } catch (error) {

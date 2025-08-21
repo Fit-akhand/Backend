@@ -30,7 +30,7 @@ const userSchema = new Schema(
             require: true 
         },
         coverImage:{
-            type: String, //cloudinary url 
+            type: String, //cloudinary url
         },
         watchHistory:[
             {
@@ -48,7 +48,6 @@ const userSchema = new Schema(
         }
 },{timestamps: true}
 )
-
 
 // a pre hook is middleware that runs before a certain action (e.g., save, update).
 // bcrypt Often used for password hashing, data validation, logging.
