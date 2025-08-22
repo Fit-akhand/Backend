@@ -9,21 +9,24 @@ cloudinary.config({
 });
 
 
+// function call hoga tab chalega
 const uplodeonCloudinary = async (localfilepath) => {
     try {
         if(!localfilepath) return null
         // uplode the file on cloudinary
         const response = await cloudinary.uploader.upload(localfilepath,{
-            resource_type : "auto"
+            resource_type : "auto" // automatically detects image, video, or other
         })
         //file has been uploded successfully
         // console.log("file is uplodede on cloudinary",response.url); 
+
         //  response URL in your website or app to display the image/video without storing it locally.
-        fs.unlinkSync(localfilepath)
-        return response; 
+
+        fs.unlinkSync(localfilepath) // remove local temp file after successful upload
+        return response;   // response contains URL, public_id, etc.
 
     } catch (error) {
-        fs.unlinkSync(localfilepath)  // remove the localy saved temporary file as the uplode operation got failed
+        fs.unlinkSync(localfilepath)  // remove local file even if upload fails
 
         return null;
     }

@@ -2,11 +2,11 @@ import multer from "multer";
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "./public/temp");
+    cb(null, "./public/temp"); // folder to save uploaded files
   },
   filename: function (req, file, cb) {
     // cb(null, file.fieldname + "-" + uniqueSuffix);
-    cb(null, file.originalname);
+    cb(null, file.originalname); // keep original filename
     /*
     {
     console.log(file)
