@@ -9,7 +9,7 @@ const userSchema = new Schema(
             require: true,
             unique: true,
             lowercase: true,
-            trim: true,
+            trim: true, //It automatically removes whitespace from the beginning and end of a string before saving it in MongoDB
             index: true,
         },
         email:{
@@ -50,6 +50,7 @@ const userSchema = new Schema(
 )
 
 // a pre hook is middleware that runs before a certain action (e.g., save, update).
+
 // bcrypt Often used for password hashing, data validation, logging.
 
 userSchema.pre("save", async function (next) {
