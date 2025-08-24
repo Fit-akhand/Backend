@@ -4,8 +4,25 @@ import { User } from "../models/user.model.js";
 import { uplodeonCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 
+const generateAccessAndRefressTokens = async(userId) =>
+   {
+    try {
+      const user = await User.findById(userId)
+      const accessToken = user.generateAccessToken()
+      const refreshToken = user.generateRefreshToken()
+
+      user.refreshToken = refreshToken
+      await user.save({ validataBeforeSave:false })
+
+      return {accessToken , refreshToken}
+
+    } catch (error) {
+      throw new ApiError(500,"something went wrong while generating access and refress token")
+    }
+   }
+
 const registerUser = asyncHandler(async (req, res) => {
- /*
+  /*
   1-> get user detail from frontend
   2-> validation - not empty
   3-> check if user already exist : user email
@@ -53,10 +70,10 @@ const registerUser = asyncHandler(async (req, res) => {
   //check for images , check for avatar
   const avatarLocalPath = req.files?.avatar?.[0]?.path;
   const coverImageLocalPath = req.files?.coverImage?.[0]?.path;
-  // yaha pe humne [ ?. ] use kiya hai (coverImage?.[0]) agar cover image hogi to lelega nahi to empty rahega same problem ko sir ne clasical way se solve kiya hai 
+  // yaha pe humne [ ?. ] use kiya hai (coverImage?.[0]) agar cover image hogi to lelega nahi to empty rahega same problem ko sir ne clasical way se solve kiya hai
 
-  //clasical way to check 
- /*
+  //clasical way to check
+  /*
   let coverImageLocalPath;
   if (req.files && Array.isArray(req.files.coverImage) && req.files.coverimage.length > 0) {
     coverImageLocalPath = req.files.coverImage[0].path
@@ -97,8 +114,107 @@ const registerUser = asyncHandler(async (req, res) => {
 
   // return response
   return res
-  .status(201)
-  .json(new ApiResponse(201, { ...createdUser._doc }, "user registered successfully"));
+    .status(201)
+    .json(
+      new ApiResponse(
+        201,
+        { ...createdUser._doc },
+        "user registered successfully"
+      )
+    );
 });
 
-export { registerUser }
+const loginUser = asyncHandler(async (req, res) => {
+  /* 
+   1-> req body => data
+   2-> check username or email
+   3-> find the user
+   4-> password check
+   5-> access and refress token
+   6-> send cookie
+  */
+
+  //  1-> req body => data
+  const { email, username, password } = req.body;
+
+  //  2-> check username or email
+  if (!username || !email) {
+    throw new ApiError(400, "username and email is required ");
+  }
+
+  /*
+   yaha pe hum confirm nahi nahi humko email se login karana hai ye
+   username se to humko ya to username mil jaye ya email 
+   */
+
+  //  3-> find the user
+  const user = User.findOne({
+    $or: [{ username }, { email }],
+  });
+
+  if (!user) {
+    throw new ApiError(404, "user not exist");
+  }
+
+  //  4-> password check
+  const isPasswordValid = await user.isPasswordCorrect(password);
+
+  if (!isPasswordValid) {
+    throw new ApiError(404, "Invalid user cradiantials");
+  }
+
+  const {accessToken , refreshToken} = await
+   generateAccessAndRefressTokens(user._id)
+
+   const loggedInUser = await User.findById(user._id).
+   select("-password -refreshToken")
+
+   const options = {
+    httpOnly : true,
+    secure: true,
+   }
+
+   return res
+   .status(200)
+   .cookie("accessToken",accessToken,option)
+   .cookie("refreshToken",refreshToken,option)
+   .json(
+    new ApiResponse(
+      200,
+      {
+        user:loggedInUser,accessToken,refreshToken
+      },
+      "User loggedIn successfully"
+    )
+   )
+});
+
+const logoutUser = asyncHandler(async (req,res) => {
+  await User.findByIdAndUpdate(
+    req.user._id,
+    {
+      $set: {
+        refreshToken: undefined
+      }
+    },
+    {
+      new: true
+    }
+  )
+
+  const options = {
+    httpOnly : true,
+    secure: true,
+   }
+
+   return res
+   .status(200)
+   .clearCookie("accessToken",options)
+   .json(new ApiResponse(200 , {} ,"User logedout Successfully"))
+})
+
+export {
+  registerUser,
+  loginUser,
+  logoutUser
+};
