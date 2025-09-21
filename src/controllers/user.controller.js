@@ -383,8 +383,8 @@ const getUserChanelProfile = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Username is missing");
   }
 
-  const channel = await User.aggregate([
-    {
+  const chanell = await User.aggregate([
+    { 
       $match: {
         username: username?.toLowerCase(),
       },
@@ -393,11 +393,11 @@ const getUserChanelProfile = asyncHandler(async (req, res) => {
       $lookup: {
         from: "subscriptions",
         localField: "_id",
-        foreignField:" channel",
+        foreignField:"channel",
         as: "subscribers",
       },
     },
-    {
+    { 
       $lookup: {
         from: "subscriptions",
         localField : "_id",
@@ -422,7 +422,7 @@ const getUserChanelProfile = asyncHandler(async (req, res) => {
         }
       }
     },
-    {
+    { // 5
       $project : {
         fullname : 1,
         username : 1,
@@ -437,14 +437,14 @@ const getUserChanelProfile = asyncHandler(async (req, res) => {
 
   ]);
 
-  if(!channel?.length){
-    throw new ApiError(400,"Channel dosenot exists")
+  if(!chanell?.length){
+    throw new ApiError(400,"chanell dosenot exists")
   }
 
   return res
   .status(200)
   .json(
-    new ApiResponse(200,channel[0],"User channel fetched successfuly")
+    new ApiResponse(200,chanell[0],"User chanell fetched successfuly")
   )
 
 });
@@ -464,7 +464,7 @@ const getWatchHistory = asyncHandler(async (req,res) => {
         as:"watchHistory",
         pipeline:[
           {
-            $lookup:{
+            $lookup:{ 
               from:"user",
               localField:"owner",
               foreignField:"_id",
@@ -483,7 +483,7 @@ const getWatchHistory = asyncHandler(async (req,res) => {
           {
             $addFields:{
               owner:{
-                $first:"owner"
+                $first:"$owner"
               }
             }
           }
