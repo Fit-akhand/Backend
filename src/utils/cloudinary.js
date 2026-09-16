@@ -1,37 +1,46 @@
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
+import { env } from "../config/env.js";
+import { logger } from "./logger.js";
 
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  // Click 'View API Keys' above to copy your API secret
-  api_secret: process.env.CLOUDINARY_API_SECRET,
+  cloud_name: env.cloudinary.cloudName,
+  api_key: env.cloudinary.apiKey,
+  api_secret: env.cloudinary.apiSecret,
+  timeout: 60000,
 });
 
+const removeLocalFile = (localfilepath) => {
+  if (localfilepath && fs.existsSync(localfilepath)) {
+    fs.unlinkSync(localfilepath);
+  }
+};
 
-// function call hoga tab chalega
 const uplodeonCloudinary = async (localfilepath) => {
-    try {
-        if(!localfilepath) return null
-        // uplode the file on cloudinary
-        const response = await cloudinary.uploader.upload(localfilepath,{
-            resource_type : "auto" // automatically detects image, video, or other
-        })
-        //file has been uploded successfully
-        // console.log("file is uplodede on cloudinary",response.url); 
+  try {
+    if (!localfilepath) return null;
 
-        //  response URL in your website or app to display the image/video without storing it locally.
-
-        fs.unlinkSync(localfilepath) // remove local temp file after successful upload
-        return response;   // response contains URL, public_id, etc.
-
-    } catch (error) {
-        fs.unlinkSync(localfilepath)  // remove local file even if upload fails
-
-        return null;
+    if (env.isTest) {
+      removeLocalFile(localfilepath);
+      return {
+        url: `http://localhost/test/${encodeURIComponent(localfilepath)}`,
+        public_id: "test-public-id",
+        duration: 12.5,
+      };
     }
-}
 
+    const response = await cloudinary.uploader.upload(localfilepath, {
+      resource_type: "auto",
+      timeout: 60000,
+    });
 
+    removeLocalFile(localfilepath);
+    return response;
+  } catch (error) {
+    logger.error("cloudinary_upload_failed", { message: error?.message });
+    removeLocalFile(localfilepath);
+    return null;
+  }
+};
 
-export {uplodeonCloudinary}
+export { uplodeonCloudinary, uplodeonCloudinary as uploadOnCloudinary };

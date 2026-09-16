@@ -1,14 +1,15 @@
 import mongoose from "mongoose";
 import { DB_NAME } from "../constants.js";
+import { logger } from "../utils/logger.js";
 
 const connentDB = async() => {
    try {
-    // mongoosed object return karta hai to hum usko variable me hold kar rahe
-   const connectionInstance =  await mongoose.connect(`${process.env.MONGODB_URI}/${DB_NAME}`)
-   // connectionInstance.connection.host use kar rahe kyuki campany me sabke data base alag alag hote hai to pata hona chahiye hum kis data base me connect hai 
-   console.log(`\n MongoDB connected !! DB HOST : ${connectionInstance.connection.host}`)
+   const connectionInstance =  await mongoose.connect(`${process.env.MONGODB_URI}/${DB_NAME}`, {
+    serverSelectionTimeoutMS: 10000,
+   })
+   logger.info("mongodb_connected", { host: connectionInstance.connection.host })
    } catch (error) {
-    console.log(`MONGODB connection FAILED : ${error}`)
+    logger.error("mongodb_connection_failed", { message: error.message })
     process.exit(1)
    }
 }

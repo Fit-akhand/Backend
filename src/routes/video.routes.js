@@ -7,17 +7,19 @@ import {
     togglePublishStatus,
     updateVideo,
 } from "../controllers/video.controller.js"
-import {verifyJWT} from "../middlewares/auth.middleware.js"
-import {upload} from "../middlewares/multer.middleware.js"
+import {upload, uploadVideo} from "../middlewares/multer.middleware.js"
+import {optionalJWT, verifyJWT} from "../middlewares/auth.middleware.js"
+import {uploadLimiter} from "../middlewares/rateLimit.middleware.js"
 
 const router = Router();
-router.use(verifyJWT); // Apply verifyJWT middleware to all routes in this file
 
 router
     .route("/")
-    .get(getAllVideos)
+    .get(optionalJWT, getAllVideos)
     .post(
-        upload.fields([
+        verifyJWT,
+        uploadLimiter,
+        uploadVideo.fields([
             {
                 name: "videoFile",
                 maxCount: 1,
@@ -26,17 +28,16 @@ router
                 name: "thumbnail",
                 maxCount: 1,
             },
-            
         ]),
         publishAVideo
     );
 
 router
     .route("/:videoId")
-    .get(getVideoById)
-    .delete(deleteVideo)
-    .patch(upload.single("thumbnail"), updateVideo);
+    .get(optionalJWT, getVideoById)
+    .delete(verifyJWT, deleteVideo)
+    .patch(verifyJWT, uploadLimiter, upload.single("thumbnail"), updateVideo);
 
-router.route("/toggle/publish/:videoId").patch(togglePublishStatus);
+router.route("/toggle/publish/:videoId").patch(verifyJWT, togglePublishStatus);
 
 export default router

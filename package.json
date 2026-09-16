@@ -5,7 +5,10 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon -r dotenv/config --experimental-json-modules src/index.js"
+    "dev": "nodemon -r dotenv/config --experimental-json-modules src/index.js",
+    "start": "node -r dotenv/config src/index.js",
+    "lint": "node --check src/index.js src/app.js",
+    "test": "node --test --test-concurrency=1 --test-timeout=120000 tests/*.test.js"
   },
   "keywords": [
     "javascript",
@@ -14,17 +17,20 @@
   "author": "Akhand Raj Singh",
   "license": "ISC",
   "devDependencies": {
+    "mongodb-memory-server": "^11.2.0",
     "nodemon": "^3.1.10",
-    "prettier": "^3.5.3"
+    "prettier": "^3.5.3",
+    "supertest": "^7.2.2"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
     "cloudinary": "^2.7.0",
-    "cookie-parse": "^0.4.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
+    "express-rate-limit": "^8.0.1",
+    "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.15.1",
     "mongoose-aggregate-paginate-v2": "^1.1.4",

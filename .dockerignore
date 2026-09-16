@@ -1,0 +1,10 @@
+node_modules
+.git
+.env
+.env.*
+!.env.example
+npm-debug.log
+public/temp
+coverage
+*.md
+!README.md

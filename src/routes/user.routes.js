@@ -11,11 +11,14 @@ import { loginUser,
       getUserChanelProfile,
       getWatchHistory } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
-import { varifyJWT } from "../middlewares/auth.middleware.js"
+import { optionalJWT, verifyJWT } from "../middlewares/auth.middleware.js"
+import { authLimiter, uploadLimiter } from "../middlewares/rateLimit.middleware.js"
 
 const router = Router()
 
 router.route('/register').post(
+    authLimiter,
+    uploadLimiter,
     upload.fields([
         {
             name:"avatar",
@@ -29,18 +32,18 @@ router.route('/register').post(
     registerUser
 )
 
-router.route("/login").post(loginUser)
+router.route("/login").post(authLimiter, loginUser)
 
 //sequred routes
-router.route("/logout").post(varifyJWT , logoutUser)
-router.route("/refresh-token").post(refreshAccessToken)
-router.route("/change_password").post(varifyJWT,changeCurrentPassword)
-router.route("/current_user").get(varifyJWT,getCurrentUser)
-router.route("/update_account").patch(varifyJWT,updateAccountDetail)
-router.route("/avater").patch(varifyJWT,upload.single("avatar"),updateUserAvatar)
-router.route("/cover_image").patch(varifyJWT,upload.single("coverImage"),updateUserCoverimage)
-router.route("/c/:username").get(varifyJWT,getUserChanelProfile)
-router.route("/History").get(varifyJWT,getWatchHistory)
+router.route("/logout").post(verifyJWT , logoutUser)
+router.route("/refresh-token").post(authLimiter, refreshAccessToken)
+router.route("/change_password").post(verifyJWT,changeCurrentPassword)
+router.route("/current_user").get(verifyJWT,getCurrentUser)
+router.route("/update_account").patch(verifyJWT,updateAccountDetail)
+router.route("/avater").patch(verifyJWT,uploadLimiter,upload.single("avatar"),updateUserAvatar)
+router.route("/cover_image").patch(verifyJWT,uploadLimiter,upload.single("coverImage"),updateUserCoverimage)
+router.route("/c/:username").get(optionalJWT,getUserChanelProfile)
+router.route("/History").get(verifyJWT,getWatchHistory)
 
 
 

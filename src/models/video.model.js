@@ -15,6 +15,8 @@ const videoSchema = new Schema(
     owner: {
       type: Schema.Types.ObjectId,
       ref: "User",
+      required: true,
+      index: true,
     },
     title: {
       type: String,
@@ -42,8 +44,8 @@ const videoSchema = new Schema(
   }
 );
 
-//When you call videoSchema.plugin(mongooseAggregatePaginate);
-//  you are adding pagination functionality to Mongoose aggregate queries on this schema.
+videoSchema.index({ isPublished: 1, createdAt: -1 });
+videoSchema.index({ title: "text", description: "text" });
 videoSchema.plugin(mongooseAggregatePaginate);
 
 export const Video = mongoose.model("Video", videoSchema);

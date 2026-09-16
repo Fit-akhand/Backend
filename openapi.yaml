@@ -1,0 +1,238 @@
+openapi: 3.0.3
+info:
+  title: Vidzora API
+  version: 1.0.0
+  description: Vidzora REST API. Use Bearer access tokens or httpOnly cookies.
+servers:
+  - url: http://localhost:8000/api/v1
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: accessToken
+  schemas:
+    ApiSuccess:
+      type: object
+      properties:
+        statusCode: { type: integer }
+        data: {}
+        message: { type: string }
+        success: { type: boolean, example: true }
+    ApiError:
+      type: object
+      properties:
+        statusCode: { type: integer }
+        data: { nullable: true }
+        message: { type: string }
+        success: { type: boolean, example: false }
+        errors: { type: array, items: { type: string } }
+        errorCode: { type: string }
+        requestId: { type: string }
+    Paginated:
+      type: object
+      properties:
+        results: { type: array, items: {} }
+        page: { type: integer }
+        limit: { type: integer }
+        total: { type: integer }
+        totalPages: { type: integer }
+        hasNextPage: { type: boolean }
+        hasPreviousPage: { type: boolean }
+security:
+  - bearerAuth: []
+  - cookieAuth: []
+paths:
+  /healthcheck:
+    get:
+      security: []
+      summary: Liveness
+      responses:
+        "200": { description: Process is alive }
+  /ready:
+    get:
+      security: []
+      summary: Readiness (Mongo connected)
+      responses:
+        "200": { description: Ready }
+        "503": { description: Database down }
+  /users/register:
+    post:
+      security: []
+      summary: Register
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [fullname, email, username, password, avatar]
+              properties:
+                fullname: { type: string }
+                email: { type: string }
+                username: { type: string }
+                password: { type: string }
+                avatar: { type: string, format: binary }
+                coverImage: { type: string, format: binary }
+      responses:
+        "201": { description: Created }
+        "400": { description: Validation }
+        "409": { description: Duplicate }
+  /users/login:
+    post:
+      security: []
+      summary: Login
+      responses:
+        "200": { description: Tokens + user }
+  /users/logout:
+    post:
+      summary: Logout
+      responses:
+        "200": { description: Cookies cleared }
+  /users/refresh-token:
+    post:
+      security: []
+      summary: Rotate tokens
+      responses:
+        "200": { description: New tokens }
+  /users/current_user:
+    get:
+      summary: Current user
+      responses:
+        "200": { description: Profile without secrets }
+  /videos:
+    get:
+      security: []
+      summary: List/search published videos (optional auth for own unpublished)
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer }
+        - in: query
+          name: limit
+          schema: { type: integer }
+        - in: query
+          name: query
+          schema: { type: string }
+        - in: query
+          name: sortBy
+          schema: { type: string, enum: [createdAt, views, title, duration] }
+        - in: query
+          name: sortType
+          schema: { type: string, enum: [asc, desc] }
+        - in: query
+          name: userId
+          schema: { type: string }
+      responses:
+        "200": { description: Paginated videos }
+    post:
+      summary: Publish video
+      responses:
+        "201": { description: Created }
+  /videos/{videoId}:
+    get:
+      security: []
+      summary: Get published video (increments views; writes history only if authenticated)
+      parameters:
+        - in: path
+          name: videoId
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: Video }
+        "404": { description: Missing or unpublished }
+    patch:
+      summary: Update own video
+    delete:
+      summary: Delete own video
+  /videos/toggle/publish/{videoId}:
+    patch:
+      summary: Toggle publish
+  /comments/{videoId}:
+    get:
+      summary: List comments
+    post:
+      summary: Add comment
+  /comments/c/{commentId}:
+    patch:
+      summary: Update own comment
+    delete:
+      summary: Delete own comment
+  /likes/toggle/v/{videoId}:
+    post:
+      summary: Toggle video like
+  /likes/toggle/c/{commentId}:
+    post:
+      summary: Toggle comment like
+  /likes/toggle/t/{tweetId}:
+    post:
+      summary: Toggle tweet like
+  /likes/videos:
+    get:
+      summary: Liked videos
+  /subscriptions/c/{channelId}:
+    post:
+      summary: Toggle subscription
+    get:
+      summary: Channel subscribers
+  /subscriptions/u/{subscriberId}:
+    get:
+      summary: Subscribed channels
+  /tweets:
+    post:
+      summary: Create tweet
+  /tweets/user/{userId}:
+    get:
+      summary: List user tweets
+  /tweets/{tweetId}:
+    patch:
+      summary: Update own tweet
+    delete:
+      summary: Delete own tweet
+  /playlist:
+    post:
+      summary: Create playlist
+  /playlist/user/{userId}:
+    get:
+      summary: List playlists
+  /playlist/{playlistId}:
+    get:
+      summary: Get playlist
+    patch:
+      summary: Update own playlist
+    delete:
+      summary: Delete own playlist
+  /playlist/add/{videoId}/{playlistId}:
+    patch:
+      summary: Add video
+  /playlist/remove/{videoId}/{playlistId}:
+    patch:
+      summary: Remove video
+  /dashboard/stats:
+    get:
+      summary: Current user channel stats
+  /dashboard/videos:
+    get:
+      summary: Current user videos
+  /users/History:
+    get:
+      summary: Watch history (array, max 50)
+  /users/change_password:
+    post:
+      summary: Change password (invalidates access JWTs)
+  /users/update_account:
+    patch:
+      summary: Update name/email
+  /users/avater:
+    patch:
+      summary: Update avatar (path spelling is historical)
+  /users/cover_image:
+    patch:
+      summary: Update cover
+  /users/c/{username}:
+    get:
+      summary: Public channel profile
